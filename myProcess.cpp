@@ -64,7 +64,7 @@ Queue* init_queue() {
 }
 
 void insert_in_queue(Queue *q, Process p) {
-  Node *n = malloc(sizeof(Node));
+  Node *n = new Node();
   n->process = p;
   n->next = NULL;
   if(q->size == 0) {
