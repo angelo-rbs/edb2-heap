@@ -115,3 +115,26 @@ void MinHeap::heapifyUp(size_t index) {
         index = getParentIndex(index);
     }
 }
+
+void MinHeap::update_key(size_t index) {
+    if (index >= nodes.size()) return;
+    nodes[index].key = nodes[index].process.time_to_kill - nodes[index].process.time_used;
+    heapifyUp(index);
+    heapifyDown(index);
+}
+
+void MinHeap::convert_queue_to_heap(std::queue<Process> fila) {
+    while (!fila.empty()) {
+        Process p = fila.front(); fila.pop();
+        unsigned int key = p.time_to_kill - p.time_used;
+        insert(p, key);
+    }
+}
+
+std::queue<Process> MinHeap::convert_heap_to_queue() const {
+    std::queue<Process> fila;
+    for (const auto& node : nodes) {
+        fila.push(node.process);
+    }
+    return fila;
+}
