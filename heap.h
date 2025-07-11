@@ -27,6 +27,10 @@ public:
 
     void printHeap() const;
 
+    void update_key(size_t index);
+    void convert_queue_to_heap(std::queue<Process> fila);
+    void convert_heap_to_queue() const; 
+
 private:
     std::vector<HeapNode> nodes;
     const int maxCapacity;      
