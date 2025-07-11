@@ -1,60 +1,117 @@
 #include "heap.h"
+#include <algorithm>
+#include <limits>   
+#include <iostream> 
 
-#include <stdlib.h>
-#include <stdio.h>
+HeapNode::HeapNode() : key(0) {}
+HeapNode::HeapNode(const Process& p, unsigned int k) : process(p), key(k) {}
 
-MinHeap* createMinHeap(int capacity) {
-    MinHeap* heap = (MinHeap*)malloc(sizeof(MinHeap));
-    heap->processes.reserve(capacity);
-    heap->size = 0;
-    heap->capacity = capacity;
-    return heap;
+MinHeap::MinHeap(int capacity)
+    : maxCapacity(capacity < 0 ? 0 : capacity) {
+    nodes.reserve(maxCapacity);
 }
 
-int getParentIndex(int i) {
-    return (i - 1) / 2;
+MinHeap::~MinHeap() {
 }
 
-int getLeftChildIndex(int i) {
+size_t MinHeap::getParentIndex(size_t i) const {
+    return (i == 0) ? 0 : (i - 1) / 2;
+}
+
+size_t MinHeap::getLeftChildIndex(size_t i) const {
     return 2 * i + 1;
 }
 
-int getRightChildIndex(int i) {
+size_t MinHeap::getRightChildIndex(size_t i) const {
     return 2 * i + 2;
 }
 
-void swap(int i, int j, MinHeap* heap) {
-    Process temp = heap->processes[i];
-    heap->processes[i] = heap->processes[j];
-    heap->processes[j] = temp;
+void MinHeap::swapNodes(size_t i, size_t j) {
+    std::swap(nodes[i], nodes[j]);
 }
 
-bool isEmpty(MinHeap* heap) {
-    return heap->size == 0;
-}
-
-void insertProcess(MinHeap* heap, Process process) {
-    if (heap->size >= heap->capacity) {
-        printf("Heap is full, cannot insert process.\n");
+void MinHeap::insert(const Process& process, unsigned int key) {
+    if (nodes.size() >= (size_t)maxCapacity) {
+        std::cerr << "Heap is full (max capacity: " << maxCapacity << "), cannot insert node." << std::endl;
         return;
     }
-    
-    heap->processes.push_back(process);
-    heap->size++;
-    
-    int index = heap->size - 1;
-    while (index != 0 && heap->processes[getParentIndex(index)].time_to_kill > heap->processes[index].time_to_kill) {
-        swap(index, getParentIndex(index), heap);
-        index = getParentIndex(index);
+
+    HeapNode newNode(process, key);
+    nodes.push_back(newNode);
+    heapifyUp(nodes.size() - 1);
+}
+
+HeapNode MinHeap::extractMin() {
+    if (isEmpty()) {
+        std::cerr << "Heap is empty, cannot extract minimum node." << std::endl;
+        return HeapNode(Process(), std::numeric_limits<unsigned int>::max());
+    }
+
+    HeapNode minNode = nodes[0];
+
+    nodes[0] = nodes.back();
+    nodes.pop_back();
+
+    if (!nodes.empty()) {
+        heapifyDown(0);
+    }
+
+    return minNode;
+}
+
+HeapNode MinHeap::peekMin() const {
+    if (isEmpty()) {
+        std::cerr << "Heap is empty, cannot peek minimum node." << std::endl;
+        return HeapNode(Process(), std::numeric_limits<unsigned int>::max());
+    }
+    return nodes[0];
+}
+
+bool MinHeap::isEmpty() const {
+    return nodes.empty();
+}
+
+size_t MinHeap::getSize() const {
+    return nodes.size();
+}
+
+void MinHeap::printHeap() const {
+    std::cout << "MinHeap Contents:" << std::endl;
+    if (isEmpty()) {
+        std::cout << "  (Empty)" << std::endl;
+        return;
+    }
+    for (size_t i = 0; i < nodes.size(); ++i) {
+        std::cout << "  Node " << i << ": Key=" << nodes[i].key
+                  << ", Process ID=" << nodes[i].process.id
+                  << ", Program=" << getProgramName(nodes[i].process.name) // Usa getProgramName
+                  << ", TTK=" << nodes[i].process.time_to_kill
+                  << ", TU=" << nodes[i].process.time_used << std::endl;
     }
 }
 
-void printHeap(MinHeap* heap) {
-    for (int i = 0; i < heap->size; i++) {
-        printf("Process id=%d, Program=%s, time_to_kill=%d, time_used=%d\n", 
-            heap->processes[i].id, 
-            getProgramName(heap->processes[i].name), 
-            heap->processes[i].time_to_kill,
-            heap->processes[i].time_used);
+void MinHeap::heapifyDown(size_t index) {
+    size_t smallest = index;
+    size_t leftChildIndex = getLeftChildIndex(index);
+    size_t rightChildIndex = getRightChildIndex(index);
+
+    if (leftChildIndex < nodes.size() && nodes[leftChildIndex].key < nodes[smallest].key) {
+        smallest = leftChildIndex;
+    }
+
+    if (rightChildIndex < nodes.size() && nodes[rightChildIndex].key < nodes[smallest].key) {
+        smallest = rightChildIndex;
+    }
+
+    if (smallest != index) {
+        swapNodes(index, smallest);
+        heapifyDown(smallest);
+    }
+}
+
+void MinHeap::heapifyUp(size_t index) {
+    while (index > 0 && nodes[getParentIndex(index)].key > nodes[index].key) {
+        swapNodes(index, getParentIndex(index));
+        index = getParentIndex(index);
     }
 }

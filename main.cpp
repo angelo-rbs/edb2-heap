@@ -1,16 +1,17 @@
 #include "heap.h"
+#include "myProcess.h"
 
 int main() {
 
-    MinHeap* heap = createMinHeap(10);
+    MinHeap* heap = new MinHeap(10);
 
-    insertProcess(heap, create_Process());
-    insertProcess(heap, create_Process());
-    insertProcess(heap, create_Process());
-    insertProcess(heap, create_Process());
-    insertProcess(heap, create_Process());
+    heap->insert(create_Process(), 5);
+    heap->insert(create_Process(), 4);
+    heap->insert(create_Process(), 3);
+    heap->insert(create_Process(), 2);
+    heap->insert(create_Process(), 1);
 
-    printHeap(heap);
+    heap->printHeap();
 
     return 0;
 }

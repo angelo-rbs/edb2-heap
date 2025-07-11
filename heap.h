@@ -1,26 +1,42 @@
 #ifndef HEAP_H
 #define HEAP_H
 
-#include <vector>
+#include <vector>   
+#include <string>   
+#include <iostream> 
 #include "myProcess.h"
 
-struct MinHeap {
-    std::vector<Process> processes;
-    int size;
-    int capacity;
+typedef struct HeapNode {
+    Process process;    
+    unsigned int key;   
+
+    HeapNode();
+    HeapNode(const Process& p, unsigned int k);
+} HeapNode;
+
+class MinHeap {
+public:
+    MinHeap(int maxCapacity);
+    ~MinHeap();
+
+    bool isEmpty() const;
+    size_t getSize() const;
+    void insert(const Process& process, unsigned int key);
+    HeapNode extractMin();
+    HeapNode peekMin() const;
+
+    void printHeap() const;
+
+private:
+    std::vector<HeapNode> nodes;
+    const int maxCapacity;      
+
+    size_t getParentIndex(size_t i) const;
+    size_t getLeftChildIndex(size_t i) const;
+    size_t getRightChildIndex(size_t i) const;
+    void swapNodes(size_t i, size_t j);
+    void heapifyDown(size_t index);     
+    void heapifyUp(size_t index);       
 };
-
-
-int getParentIndex(int i);
-int getLeftChildIndex(int i);
-int getRightChildIndex(int i);
-
-MinHeap* createMinHeap(int capacity);
-void insertProcess(MinHeap* heap, Process process);
-bool isEmpty(MinHeap* heap);
-
-void swap(int i, int j, MinHeap* heap);
-
-void printHeap(MinHeap* heap);
 
 #endif
