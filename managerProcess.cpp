@@ -14,11 +14,29 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "A quantidade de processo deve ser maior que 0.\n");
     return 1;
   }
-  Queue *q = create_queue_of_process(n_process);
-  /**
-  while(teste para manter o loop até o heap ficar vazio){
-    este loop é onde deve ficar a lógica descrito no pdf em anexo
-  }
-  */
+  Queue* q = nullptr;
+  std::queue<Process> fila = create_queue_of_process(n_process);
+
+  MinHeap* heap = new MinHeap(n_process);
+     heap->convert_queue_to_heap(fila);
+
+  while (!heap->isEmpty()) {
+    int n = rand() % heap->getSize() + 1;
+
+    for (int i = 0; i < n && i < heap->getSize(); ++i) {
+      execute_Process(heap->nodes[i].process);
+      heap->update_key(i);
+    }
+
+    while (!heap->isEmpty() && heap->peekMin().key == 0) {
+      Process p = heap->extractMin().process;
+      std::cout << "\n[FINALIZADO] ID=" << p.id
+                << ", Programa=" << getProgramName(p.name)
+                << ", TTK=" << p.time_to_kill
+                << ", TU=" << p.time_used << "\n";
+    }
+
+     heap->printHeap();
+  } 
   return 0;
 }
